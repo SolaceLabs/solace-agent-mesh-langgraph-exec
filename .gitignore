@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Packaging artefacts
+build/
+dist/
+*.egg-info/
+*.egg
+wheels/
+
+# Environment / secrets
+.env
+.env.local
+*.env.local
+
+# LangGraph local dev artefacts
+.langgraph_api/
+
+# IDE / editor
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# Test / coverage
+.coverage
+.coverage.*
+.pytest_cache/
+htmlcov/

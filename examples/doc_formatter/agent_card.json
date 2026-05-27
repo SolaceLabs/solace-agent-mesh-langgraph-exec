@@ -1,0 +1,24 @@
+{
+  "name": "doc_formatter",
+  "description": "Formats raw technical notes into structured Markdown documentation (## Summary, ## Technical Details, ## Action Items).",
+  "url": "a2a://sam-demo/doc_formatter",
+  "version": "0.1.0",
+  "provider": {
+    "name": "sam-langgraph-a2a example",
+    "url": "https://example.invalid/doc_formatter"
+  },
+  "capabilities": {
+    "streaming": true,
+    "pushNotifications": false
+  },
+  "defaultInputModes": ["text"],
+  "defaultOutputModes": ["text"],
+  "skills": [
+    {
+      "id": "format_notes",
+      "name": "Format technical notes",
+      "description": "Takes raw, unorganized technical notes and returns a structured Markdown document.",
+      "tags": ["documentation", "markdown", "formatting"]
+    }
+  ]
+}

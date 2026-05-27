@@ -1,0 +1,24 @@
+{
+  "name": "<your-agent-name>",
+  "description": "<one-sentence summary of what this agent does>",
+  "url": "a2a://<sam-namespace>/<your-agent-name>",
+  "version": "0.1.0",
+  "provider": {
+    "name": "<your team or organisation>",
+    "url": "<https://example.invalid/your-agent>"
+  },
+  "capabilities": {
+    "streaming": true,
+    "pushNotifications": false
+  },
+  "defaultInputModes": ["text"],
+  "defaultOutputModes": ["text"],
+  "skills": [
+    {
+      "id": "<skill-id>",
+      "name": "<human-readable skill name>",
+      "description": "<what this skill does>",
+      "tags": ["<tag1>", "<tag2>"]
+    }
+  ]
+}

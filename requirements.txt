@@ -1,0 +1,7 @@
+solace-pubsubplus>=1.8.0
+langchain>=0.1.0
+langchain-core>=0.1.0
+langchain-openai>=0.0.5
+langgraph>=0.0.40
+langgraph-checkpoint>=0.0.1
+python-dotenv>=1.0.0

@@ -1,0 +1,3 @@
+# Example-specific deps. The top-level requirements.txt already covers
+# everything here; this file lets the example be installed in isolation.
+-r ../../requirements.txt

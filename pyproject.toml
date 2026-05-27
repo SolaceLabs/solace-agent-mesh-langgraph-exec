@@ -1,0 +1,60 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sam-langgraph-a2a"
+version = "0.1.0"
+description = "Host a compiled LangGraph as an A2A agent on Solace Agent Mesh."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "Apache-2.0" }
+authors = [{ name = "Dennis Brinley" }]
+keywords = [
+    "solace",
+    "solace-agent-mesh",
+    "langgraph",
+    "langchain",
+    "a2a",
+    "agent-mesh",
+    "agent-to-agent",
+    "pubsubplus",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: System :: Distributed Computing",
+]
+# python-dotenv is a runtime dep because the CLI reads .env files. The wrapper
+# itself does not require it.
+dependencies = [
+    "solace-pubsubplus>=1.8.0",
+    "langchain>=0.1.0",
+    "langchain-core>=0.1.0",
+    "langgraph>=0.0.40",
+    "langgraph-checkpoint>=0.0.1",
+    "python-dotenv>=1.0.0",
+]
+
+[project.optional-dependencies]
+examples = [
+    "langchain-openai>=0.0.5",
+]
+dev = [
+    "build>=1.0",
+    "ruff>=0.4",
+]
+
+[project.urls]
+Homepage = "https://github.com/dennis-brinley/solace-agent-mesh-langgraph-exec"
+Issues = "https://github.com/dennis-brinley/solace-agent-mesh-langgraph-exec/issues"
+Changelog = "https://github.com/dennis-brinley/solace-agent-mesh-langgraph-exec/blob/main/CHANGELOG.md"
+
+[tool.setuptools.packages.find]
+where = ["src"]
