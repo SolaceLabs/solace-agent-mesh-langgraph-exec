@@ -4,10 +4,12 @@ This project provides the capability to run a compiled [LangGraph](https://langc
 
 The `solace_agent_mesh_langgraph` package binds a LangGraph application to a Solace
 PubSub+ broker: it creates a queue, subscribes to the standard A2A topics
-(`{namespace}/a2a/v1/agent/request/{name}` and friends), periodically publishes
+(`{namespace}/a2a/v1/agent/request/{name}`), periodically publishes
 the agent card on the discovery topic, and dispatches incoming JSON-RPC
 requests through the graph — streaming each AIMessage back to the requester's
 `replyTo` topic as an A2A event.
+
+![Overview](docs/images/overview.png)
 
 ## Requirements
 
