@@ -9,14 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- `sam_langgraph_a2a.broker_properties_from_env()` helper. Builds the
+- `solace_agent_mesh_langgraph.broker_properties_from_env()` helper. Builds the
   Solace SDK property dict from `SOLACE_BROKER_URL`, `SOLACE_BROKER_VPN`,
   `SOLACE_BROKER_USERNAME`, `SOLACE_BROKER_PASSWORD` — matching the
   Solace Agent Mesh (SAM) env-var convention.
 - Optional TLS env vars `SOLACE_BROKER_TRUST_STORE_DIR` and
   `SOLACE_BROKER_VALIDATE_CERTS`, mapped to the corresponding
   `solace.messaging.tls.*` properties.
-- `sam_langgraph_a2a.env_str()` — public `os.getenv`-style helper that
+- `solace_agent_mesh_langgraph.env_str()` — public `os.getenv`-style helper that
   strips surrounding straight quotes from the returned value. Used
   internally by `broker_properties_from_env()` and recommended for any
   env-var reads in user code (`agent.py` / `main.py`). Why: python-dotenv
@@ -38,10 +38,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dangling `tool.setuptools.package-data` reference to a `py.typed` marker
   that didn't exist.
 
-## [0.1.0] - Initial port
+## [0.1.0] - Initial release
 
-- Ported `lang_a2a.py` and `a2a_server.py` from the upstream `a2a_proxy`
-  prototype into the `sam_langgraph_a2a` package.
+- First public release. The wrapper modules (`adapter.py`, `server.py`)
+  derive from an earlier private prototype by the author; nothing was
+  imported from any external upstream project.
 - Mapped A2A `contextId` to LangGraph `thread_id` so checkpointed graphs
   retain conversation state across requests sharing the same `contextId`.
 - Added `examples/doc_formatter/`. `agent.py` exposes a stateless

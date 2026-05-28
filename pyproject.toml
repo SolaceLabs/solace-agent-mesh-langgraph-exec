@@ -3,7 +3,7 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "sam-langgraph-a2a"
+name = "solace-agent-mesh-langgraph"
 version = "0.1.0"
 description = "Host a compiled LangGraph as an A2A agent on Solace Agent Mesh."
 readme = "README.md"
@@ -52,9 +52,9 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/dennis-brinley/solace-agent-mesh-langgraph-exec"
-Issues = "https://github.com/dennis-brinley/solace-agent-mesh-langgraph-exec/issues"
-Changelog = "https://github.com/dennis-brinley/solace-agent-mesh-langgraph-exec/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/SolaceLabs/solace-agent-mesh-langgraph-exec"
+Issues = "https://github.com/SolaceLabs/solace-agent-mesh-langgraph-exec/issues"
+Changelog = "https://github.com/SolaceLabs/solace-agent-mesh-langgraph-exec/blob/main/CHANGELOG.md"
 
 [tool.setuptools.packages.find]
 where = ["src"]

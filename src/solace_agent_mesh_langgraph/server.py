@@ -493,7 +493,7 @@ if __name__ == "__main__":
     print("A2A Langchain Server is a reusable module.")
     print("To use this server, import it and provide a compiled LangGraph agent.")
     print("Example usage:")
-    print("    from sam_langgraph_a2a import A2ALangchainServer")
+    print("    from solace_agent_mesh_langgraph import A2ALangchainServer")
     print("    server = A2ALangchainServer(langgraph_app, broker_props, agent_card)")
     print("    await server.start()")
     print("See examples/doc_formatter/main.py for a complete implementation example.")

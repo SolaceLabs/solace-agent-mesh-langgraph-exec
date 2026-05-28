@@ -4,7 +4,7 @@
   "url": "a2a://sam-demo/doc_formatter",
   "version": "0.1.0",
   "provider": {
-    "name": "sam-langgraph-a2a example",
+    "name": "solace-agent-mesh-langgraph example",
     "url": "https://example.invalid/doc_formatter"
   },
   "capabilities": {

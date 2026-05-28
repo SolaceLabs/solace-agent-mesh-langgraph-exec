@@ -55,7 +55,7 @@ Open a GitHub issue at the project's Issues page (see `project.urls` in
 (See `CHANGELOG.md` for the format.) Once GitHub Actions for release are in
 place (Stage 2 of the deployability plan):
 
-1. Update `version` in `pyproject.toml` and `src/sam_langgraph_a2a/__init__.py`.
+1. Update `version` in `pyproject.toml` and `src/solace_agent_mesh_langgraph/__init__.py`.
 2. Move the "Unreleased" section in `CHANGELOG.md` under a dated version
    heading.
 3. Commit, tag `vX.Y.Z`, push tag.

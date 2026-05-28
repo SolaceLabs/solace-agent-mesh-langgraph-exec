@@ -36,7 +36,7 @@ if len(_parents) > 2:
     if _src_dir.is_dir() and str(_src_dir) not in sys.path:
         sys.path.insert(0, str(_src_dir))
 
-from sam_langgraph_a2a import A2ALangchainServer, broker_properties_from_env
+from solace_agent_mesh_langgraph import A2ALangchainServer, broker_properties_from_env
 from agent import DocumentationFormatterAgent
 
 logging.basicConfig(

@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 from langchain_core.messages import BaseMessage, HumanMessage, AIMessage, SystemMessage
 from langchain_openai import ChatOpenAI
 from langgraph.graph import StateGraph, START, END, MessagesState
-from sam_langgraph_a2a import env_str
+from solace_agent_mesh_langgraph import env_str
 import os
 from typing import Literal
 
@@ -51,7 +51,7 @@ class DocumentationFormatterAgent:
         # Use env_str() instead of os.getenv() so quoted values from .env
         # behave the same whether loaded by python-dotenv (CLI invocations)
         # or Docker/Podman --env-file (which doesn't strip surrounding
-        # quotes). See sam_langgraph_a2a.env_str docstring for context.
+        # quotes). See solace_agent_mesh_langgraph.env_str docstring for context.
         if model_name is None:
             model_name = env_str("LLM_MODEL_NAME", "gpt-4o")
 
@@ -108,7 +108,15 @@ class DocumentationFormatterAgent:
         workflow.add_edge(START, "formatter")
         workflow.add_edge("formatter", END)
 
-        return workflow.compile(checkpointer=self.checkpointer)
+        # name= drives the trace label in LangSmith. Without it, every run
+        # shows up as "LangGraph". `langgraph.json` declares the same name
+        # for the `langgraph dev` path, but that file is NOT read by
+        # `python main.py` / the container — so we set it here too. Keep
+        # the two in sync when renaming.
+        return workflow.compile(
+            checkpointer=self.checkpointer,
+            name="documentation_formatter",
+        )
 
     async def ainvoke(self, messages: list, config: dict = None):
         """

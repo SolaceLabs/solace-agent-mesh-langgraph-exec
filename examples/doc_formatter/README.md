@@ -1,7 +1,7 @@
 # Example: Documentation Formatter on Solace Agent Mesh
 
 A minimal end-to-end example showing how to host a compiled LangGraph as an
-A2A agent on Solace Agent Mesh, using the `sam_langgraph_a2a` wrapper from
+A2A agent on Solace Agent Mesh, using the `solace_agent_mesh_langgraph` wrapper from
 this repo.
 
 The graph itself (`agent.py`) is a single-node LangGraph that takes raw

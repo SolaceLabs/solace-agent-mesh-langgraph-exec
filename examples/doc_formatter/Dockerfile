@@ -3,7 +3,7 @@
 # Bundled image for the doc_formatter EXAMPLE only.
 # -------------------------------------------------
 #
-# This Dockerfile installs the sam-langgraph-a2a wrapper AND the bundled
+# This Dockerfile installs the solace-agent-mesh-langgraph wrapper AND the bundled
 # Documentation Formatter agent into a single image, as a convenience for
 # smoke-testing the container deployment path end-to-end without needing a
 # published base image.
@@ -16,7 +16,7 @@
 # Once a base image of the wrapper is published to ghcr.io (Stage 3 of the
 # deployability roadmap), this file will collapse to roughly:
 #
-#     FROM ghcr.io/dennis-brinley/sam-langgraph-a2a:<tag>
+#     FROM ghcr.io/solacelabs/solace-agent-mesh-langgraph:<tag>
 #     COPY agent.py agent_card.json main.py ./
 #     ENTRYPOINT ["python", "main.py"]
 #

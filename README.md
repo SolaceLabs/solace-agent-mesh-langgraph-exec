@@ -1,62 +1,61 @@
-# sam-langgraph-a2a
-
-Host a compiled [LangGraph](https://langchain-ai.github.io/langgraph/) as an
-[A2A](https://github.com/google/A2A) agent on
+# LangGraph A2A Executor for Solace Agent Mesh
+This project provides the capability to run a compiled [LangGraph](https://langchain-ai.github.io/langgraph/) as an [A2A](https://github.com/google/A2A) agent on
 [Solace Agent Mesh](https://solace.com/products/agent-mesh/) (SAM).
 
-The `sam_langgraph_a2a` package binds a LangGraph application to a Solace
+The `solace_agent_mesh_langgraph` package binds a LangGraph application to a Solace
 PubSub+ broker: it creates a queue, subscribes to the standard A2A topics
 (`{namespace}/a2a/v1/agent/request/{name}` and friends), periodically publishes
 the agent card on the discovery topic, and dispatches incoming JSON-RPC
 requests through the graph — streaming each AIMessage back to the requester's
 `replyTo` topic as an A2A event.
 
-## Requirements & constraints
+## Requirements
 
-Worth knowing before you wire this into anything real:
+What you need to satisfy to use the wrapper:
 
 - **Python ≥ 3.11.** Set in [pyproject.toml](pyproject.toml).
-- **Solace authentication: basic auth only.** `broker_properties_from_env()`
-  in [src/sam_langgraph_a2a/config.py](src/sam_langgraph_a2a/config.py)
-  builds `solace.messaging.authentication.scheme.basic.username` / `…password`
-  from env vars. TLS client certificates, OAuth, and Kerberos are *not*
-  configured out of the box — to use them, build the dict yourself with the
-  relevant `solace.messaging.authentication.*` / `solace.messaging.tls.*`
-  keys and instantiate `A2ALangchainServer` directly (see
-  [templates/main.py](templates/main.py) for the wiring pattern).
-- **Broker connectivity is a runtime requirement.** The server fails fast at
+- **A reachable Solace broker.** The server fails fast at
   `messaging_service.connect()` if no broker is reachable. There is no
   embedded broker and no offline mode.
+- **LangGraph contract.** The graph must be **compiled**, its state must
+  contain a `messages` key (e.g. `MessagesState`), and it must support
+  `astream(..., stream_mode="values")`. Only the latest `AIMessage.content`
+  (as a string) is forwarded per chunk — tool calls and structured outputs
+  are not surfaced separately.
+
+## Constraints
+
+Limitations of the current implementation. Worth knowing before you wire
+this into anything real:
+
+- **Basic authentication to Solace broker only.**
+  `broker_properties_from_env()` in
+  [src/solace_agent_mesh_langgraph/config.py](src/solace_agent_mesh_langgraph/config.py)
+  builds `solace.messaging.authentication.scheme.basic.username` /
+  `…password` from env vars. TLS client certificates, OAuth, and Kerberos
+  are *not* yet available.
 - **Non-durable exclusive queue.** The queue is created when the agent
   connects and disappears when it disconnects — requests sent while the
   agent is offline are not buffered. Auto-acknowledgement is on, so a
   crash mid-execution will *not* re-deliver the in-flight message.
 - **Single agent per process.** One `A2ALangchainServer` instance hosts
-  exactly one agent card. Run multiple processes for multiple agents.
+  exactly one agent card/instance. Run multiple processes for multiple agents.
 - **JSON-RPC methods supported: `message/send` and `message/stream` only.**
   Other methods are logged and ignored — no proper JSON-RPC error reply is
   returned today.
-- **Text parts only.** Incoming `parts` with `kind != "text"` are ignored,
-  and responses always carry a single text part. Binary, data, and file
-  parts are not handled.
-- **Conversation continuity requires a checkpointed graph.** The server maps
-  the A2A `contextId` from the incoming request onto the LangGraph
+- **A2A text parts only.** Incoming `parts` with `kind != "text"` are
+  ignored, and responses always carry a single text part. Binary, data,
+  and file parts are not handled.
+  *Handling files in-message and via reference is planned.*
+- **Conversation continuity requires a checkpointed graph.** The server
+  maps the A2A `contextId` from the incoming request onto the LangGraph
   `thread_id` (falling back to a fresh UUID if the caller didn't supply
   one), so repeat callers using the same `contextId` will hit the same
-  thread. State is only actually retained if the graph is compiled with a
-  checkpointer (e.g. `MemorySaver`, `SqliteSaver`, `PostgresSaver`). Since
-  `langgraph dev` / LangGraph Platform *reject* custom checkpointers, the
-  example splits the decision: [`agent.py`](examples/doc_formatter/agent.py)
-  exports a stateless `graph` for langgraph dev, and
-  [`main.py`](examples/doc_formatter/main.py) re-wraps the graph with
-  `MemorySaver` for the SAM/A2A deployment path. See
-  [examples/doc_formatter/README.md#conversation-continuity](examples/doc_formatter/README.md#conversation-continuity)
-  for which checkpointer to pick.
-- **LangGraph contract**: the graph must be **compiled**, its state must
-  contain a `messages` key (e.g. `MessagesState`), and it must support
-  `astream(..., stream_mode="values")`. Only the latest `AIMessage.content`
-  (as a string) is forwarded per chunk — tool calls and structured outputs
-  are not surfaced separately.
+  thread. State is retained only if the graph is compiled with a
+  checkpointer (e.g. `MemorySaver`, `SqliteSaver`, `PostgresSaver`). Note
+  that `langgraph dev` / LangGraph Platform *reject* custom checkpointers.
+  In the `examples/doc_formatter/` instance, the checkpointer is specified
+  in `main.py`, outside of the graph code.
 - **Agent-card discovery interval is hard-coded** at 3 seconds on
   `<namespace>/a2a/v1/discovery/agentcards`. Not currently configurable.
 
@@ -64,7 +63,7 @@ Worth knowing before you wire this into anything real:
 
 ```
 .
-├── src/sam_langgraph_a2a/   # reusable wrapper package
+├── src/solace_agent_mesh_langgraph/   # reusable wrapper package
 │   ├── adapter.py           # LangChainA2AAdapter (graph -> A2A events)
 │   ├── server.py            # A2ALangchainServer (broker + dispatch loop)
 │   └── config.py            # broker_properties_from_env() helper
@@ -95,7 +94,7 @@ pip install -e ".[examples]"
 This installs the wrapper in editable mode plus the `langchain-openai`
 extra that the bundled example agent needs. Drop the `[examples]` extra if
 you only want the wrapper itself (e.g. you're bringing your own agent and
-just want to `import sam_langgraph_a2a`).
+just want to `import solace_agent_mesh_langgraph`).
 
 A plain `pip install -r requirements.txt` works for a strict-dependency
 install if you don't need editable mode.
@@ -109,7 +108,7 @@ cp .env.example .env
 Then fill in:
 
 Variable names follow the **Solace Agent Mesh (SAM) convention** — drop in
-your existing SAM `.env` and it will just work.
+your existing SAM `.env` settings for the Solace connection and LLM settings and it should work.
 
 | Variable                                          | Purpose                                              |
 | ------------------------------------------------- | ---------------------------------------------------- |
@@ -121,9 +120,14 @@ your existing SAM `.env` and it will just work.
 | `SAM_NAMESPACE`                                   | A2A namespace (topic prefix), default `sam-demo`     |
 | `OPENAI_API_KEY`                                  | Required by the example agent                        |
 | `LLM_MODEL_NAME`                                  | Optional, defaults to `gpt-4o`                       |
+| `LANGSMITH_TRACING`                               | *(LangSmith, optional)* Set to `true` to send traces to LangSmith. Picked up automatically by langchain/langgraph — no code changes needed. |
+| `LANGSMITH_ENDPOINT`                              | *(LangSmith, optional)* Custom endpoint if not using LangSmith SaaS. Defaults to `https://api.smith.langchain.com`. |
+| `LANGSMITH_API_KEY`                               | *(LangSmith, optional)* Required when `LANGSMITH_TRACING=true`. |
+| `LANGSMITH_PROJECT`                               | *(LangSmith, optional)* Project name traces are attributed to in the LangSmith UI. |
 
 ## Run the example
 
+**To simply run the example from a command line using the installed executor:**
 ```bash
 cd examples/doc_formatter
 python main.py
@@ -170,15 +174,21 @@ equivalence, quoted env values).
 
 ## Host your own LangGraph
 
-Start by gathering the three files every agent needs in a directory:
+Start by gathering the four files every agent needs in a directory:
 
 1. **`agent.py`** — your LangGraph definition. Exports a compiled `graph`
    at module scope (for `langgraph dev` / Studio):
    ```python
    from langgraph.graph import StateGraph, MessagesState, START, END
    # ... build your workflow ...
-   graph = workflow.compile()
+   graph = workflow.compile(name="my_agent")  # name drives the LangSmith trace label
    ```
+   The `name=` argument matters for **LangSmith** observability: without it, every
+   run shows up with the name `"LangGraph"`. Note that `langgraph.json`'s
+   `graphs.<name>` mapping does *not* propagate to the trace label when
+   you run via `python main.py` or the container — `langgraph.json` is
+   only read by `langgraph dev` / LangGraph Platform. Keep the string in
+   both places identical so traces match across both run paths.
 2. **`agent_card.json`** — copy [templates/agent_card.json](templates/agent_card.json)
    and fill in the placeholders.
 3. **`.env`** — copy [.env.example](.env.example) and fill in broker
@@ -198,16 +208,17 @@ This pattern keeps the agent's *definition* (`agent.py`) separate from
 its *deployment* (`main.py`). `agent.py` stays loadable by `langgraph dev`;
 `main.py` re-wraps the graph with runtime concerns for the SAM/A2A path.
 
-See [Requirements & constraints](#requirements--constraints) above for the
-contract your graph and broker config must satisfy.
+See [Requirements](#requirements) above for the contract your graph and
+broker config must satisfy, and [Constraints](#constraints) for the
+behavioural limits you'll want to be aware of.
 
 ### Reading env vars: use `env_str`, not `os.getenv`
 
 Anywhere your `agent.py` or `main.py` reads an env var that might come
-from `.env`, use `sam_langgraph_a2a.env_str` instead of `os.getenv`:
+from `.env`, use `solace_agent_mesh_langgraph.env_str` instead of `os.getenv`:
 
 ```python
-from sam_langgraph_a2a import env_str
+from solace_agent_mesh_langgraph import env_str
 
 api_key = env_str("OPENAI_API_KEY")          # like os.getenv, but quote-safe
 model = env_str("LLM_MODEL_NAME", "gpt-4o")  # default works the same way
@@ -306,8 +317,8 @@ What lives in `main.py`:
 - Importing the agent and **building the deployment-time graph** — most
   commonly, wrapping with a checkpointer (`MemorySaver` / `SqliteSaver` /
   `PostgresSaver`) so the wrapper's `contextId → thread_id` mapping
-  actually retains state. See [Requirements & constraints](#requirements--constraints)
-  for why this lives here, not in `agent.py`.
+  actually retains state. See [Constraints](#constraints) for why this
+  lives here, not in `agent.py`.
 - Custom broker properties beyond what `broker_properties_from_env()`
   builds (TLS client certs, OAuth, Kerberos, multi-broker failover).
 - Per-environment runtime config (different checkpointer in dev vs prod;
@@ -331,12 +342,53 @@ already landed.
   `pip install <release-url>` from anywhere instead of cloning this repo.
 - **Container base image on ghcr.io** — a slim image with Python + the
   wrapper pre-installed. Users extend with their own
-  `FROM ghcr.io/.../sam-langgraph-a2a:<tag>`, `COPY` of their `agent.py` /
+  `FROM ghcr.io/.../solace-agent-mesh-langgraph:<tag>`, `COPY` of their `agent.py` /
   `agent_card.json` / `main.py`, and `ENTRYPOINT ["python", "main.py"]`.
 - **"Add your own LangGraph" walkthrough** (`docs/getting-started.md`) —
   step-by-step guide written for non-Python audiences.
 - **Tests** — adapter-level unit tests with a fake graph, plus a
   container smoke test in CI.
+- **Broker authentication beyond basic.** OAuth (OIDC client credentials,
+  JWT bearer), TLS client certificates, and Kerberos. Will surface as
+  additional `SOLACE_BROKER_AUTH_*` env vars routed through
+  `broker_properties_from_env()` in
+  [src/solace_agent_mesh_langgraph/config.py](src/solace_agent_mesh_langgraph/config.py),
+  plus an "advanced wiring" recipe in `main.py` for cases that don't fit
+  env-var config (e.g. dynamically refreshed bearer tokens).
+- **A2A file parts (references + embedded data).** Today the adapter
+  accepts and emits only `kind: "text"`. Will extend
+  [LangChainA2AAdapter](src/solace_agent_mesh_langgraph/adapter.py) to handle
+  `kind: "file"` in both forms defined by the A2A spec: the URI-reference
+  form (`file.uri`) and the inline-bytes form (`file.bytes`, base64).
+  Inbound file parts map to LangChain `HumanMessage` content blocks the
+  graph's LLM can consume (e.g. multimodal models); outbound file payloads
+  from `AIMessage` are emitted as A2A `file` parts on the response stream.
+  `kind: "data"` (structured JSON parts) is out of scope for the first
+  pass.
+- **Horizontal scaling via shared durable queue + TTL.** Today every
+  `A2ALangchainServer` instance binds to its own non-durable exclusive
+  queue, so running multiple instances of the same agent name causes
+  request duplication (every queue receives a copy of each request).
+  Will add config knobs (likely `SAM_QUEUE_NAME`, `SAM_QUEUE_TYPE`,
+  `SAM_QUEUE_TTL_MS`) so multiple instances can bind to one **shared
+  durable queue**, letting Solace load-balance requests across consumers.
+  Per-message TTL prevents stale-message backlog when no consumer is
+  attached. Single-instance dev keeps today's throwaway-queue behaviour
+  by default. Conversation continuity in this mode requires a shared
+  checkpointer (e.g. `PostgresSaver`) so any instance can resume any
+  thread.
+- **Per-process concurrency limit (semaphore-based backpressure).** The
+  receive loop in [server.py](src/solace_agent_mesh_langgraph/server.py) currently
+  fires `asyncio.create_task(self._message_handler(...))` unconditionally
+  for every incoming message, with no upper bound. Under burst load,
+  tasks accumulate until something else gives — typically the httpx
+  connection pool (default 100), the LLM provider's rate limit, or
+  process file descriptors (`ulimit -n`). Will add a `SAM_MAX_CONCURRENT_REQUESTS`
+  env var backed by an `asyncio.Semaphore` — acquire before
+  `create_task`, release in a `finally` block. Unset / `0` means
+  unbounded (today's behaviour); a finite value gives clean backpressure
+  to the broker (messages stay on the queue) instead of degrading at the
+  network layer.
 
 Not currently planned (call out so the limits are clear):
 

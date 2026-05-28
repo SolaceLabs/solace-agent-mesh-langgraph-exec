@@ -1,10 +1,10 @@
 # SPDX-License-Identifier: Apache-2.0
 """
-sam_langgraph_a2a — host a compiled LangGraph as a Solace Agent Mesh A2A agent.
+solace_agent_mesh_langgraph — host a compiled LangGraph as a Solace Agent Mesh A2A agent.
 
 Typical use:
 
-    from sam_langgraph_a2a import A2ALangchainServer
+    from solace_agent_mesh_langgraph import A2ALangchainServer
 
     server = A2ALangchainServer(graph, broker_properties, agent_card)
     await server.start()

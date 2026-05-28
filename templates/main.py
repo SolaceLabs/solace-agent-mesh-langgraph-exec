@@ -26,9 +26,9 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-from sam_langgraph_a2a import A2ALangchainServer, broker_properties_from_env, env_str
+from solace_agent_mesh_langgraph import A2ALangchainServer, broker_properties_from_env, env_str
 
-# Use sam_langgraph_a2a.env_str() (re-exported above) instead of os.getenv()
+# Use solace_agent_mesh_langgraph.env_str() (re-exported above) instead of os.getenv()
 # anywhere you read env vars that might come from .env. python-dotenv strips
 # surrounding quotes on load; Docker/Podman --env-file does not. env_str
 # normalises both paths so the same .env file works under `python main.py`
