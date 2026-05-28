@@ -1,15 +1,41 @@
 {
   "name": "<your-agent-name>",
   "description": "<one-sentence summary of what this agent does>",
-  "url": "a2a://<sam-namespace>/<your-agent-name>",
+  "url": "solace:<sam-namespace>/a2a/v1/agent/request/<your-agent-name>",
   "version": "0.1.0",
+  "preferredTransport": "JSONRPC",
+  "protocolVersion": "0.3.0",
   "provider": {
-    "name": "<your team or organisation>",
+    "organization": "<your team or organisation>",
     "url": "<https://example.invalid/your-agent>"
   },
   "capabilities": {
     "streaming": true,
-    "pushNotifications": false
+    "pushNotifications": false,
+    "stateTransitionHistory": false,
+    "extensions": [
+      {
+        "uri": "https://solace.com/a2a/extensions/display-name",
+        "description": "A UI-friendly display name for the agent.",
+        "params": {
+          "display_name": "<UI-friendly Display Name>"
+        }
+      },
+      {
+        "uri": "https://solace.com/a2a/extensions/sam/tools",
+        "description": "A list of tools available to the agent.",
+        "params": {
+          "tools": [
+            {
+              "id": "<tool-id>",
+              "name": "<tool-name>",
+              "description": "<what this tool does>",
+              "tags": ["<tag1>", "<tag2>"]
+            }
+          ]
+        }
+      }
+    ]
   },
   "defaultInputModes": ["text"],
   "defaultOutputModes": ["text"],

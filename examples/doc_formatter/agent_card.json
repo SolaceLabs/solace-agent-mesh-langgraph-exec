@@ -1,15 +1,41 @@
 {
   "name": "doc_formatter",
   "description": "Formats raw technical notes into structured Markdown documentation (## Summary, ## Technical Details, ## Action Items).",
-  "url": "a2a://sam-demo/doc_formatter",
+  "url": "solace:sam-demo/a2a/v1/agent/request/doc_formatter",
   "version": "0.1.0",
+  "preferredTransport": "JSONRPC",
+  "protocolVersion": "0.3.0",
   "provider": {
-    "name": "solace-agent-mesh-langgraph example",
+    "organization": "solace-agent-mesh-langgraph example",
     "url": "https://example.invalid/doc_formatter"
   },
   "capabilities": {
     "streaming": true,
-    "pushNotifications": false
+    "pushNotifications": false,
+    "stateTransitionHistory": false,
+    "extensions": [
+      {
+        "uri": "https://solace.com/a2a/extensions/display-name",
+        "description": "A UI-friendly display name for the agent.",
+        "params": {
+          "display_name": "Doc Formatter Agent"
+        }
+      },
+      {
+        "uri": "https://solace.com/a2a/extensions/sam/tools",
+        "description": "A list of tools available to the agent.",
+        "params": {
+          "tools": [
+            {
+              "id": "format_document",
+              "name": "format_document",
+              "description": "Formats raw technical notes into structured Markdown documentation with ## Summary, ## Technical Details, and ## Action Items sections.",
+              "tags": ["formatting", "markdown", "documentation"]
+            }
+          ]
+        }
+      }
+    ]
   },
   "defaultInputModes": ["text"],
   "defaultOutputModes": ["text"],

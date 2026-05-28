@@ -257,13 +257,24 @@ Field reference (template at [templates/agent_card.json](templates/agent_card.js
 | --- | --- | --- |
 | `name` | yes | Used as the agent identifier in topics: `<namespace>/a2a/v1/agent/request/<name>`. Keep it URL/topic-safe (lowercase, hyphens or underscores). |
 | `description` | recommended | One-line summary surfaced by orchestrators and discovery UIs. |
-| `url` | recommended | Canonical address for this agent. The form `a2a://<namespace>/<name>` is conventional but not enforced. |
+| `url` | **required for direct UI calls** | Transport directive read by SAM clients. Use the form `solace:<namespace>/a2a/v1/agent/request/<name>` (no `//` after `solace:`) — this tells the SAM UI / other clients to reach the agent via the Solace broker on the same request topic the wrapper is already subscribed to. **Do not use `a2a://...`** — that scheme tells clients to open a direct A2A-over-HTTP transport to the URL, which the wrapper does not implement; UI-initiated calls will appear to succeed at the broker but render nothing in the UI. Orchestrator-mediated calls work either way because the orchestrator ignores the URL and forwards over its own broker connection. |
 | `version` | recommended | Bump when behavior or interface changes. |
-| `provider` | optional | `{name, url}` for the team or org owning the agent. |
+| `preferredTransport` | **required for SAM** | Set to `"JSONRPC"`. SAM peer agents register this; without it the agent may be silently dropped from the mesh registry. |
+| `protocolVersion` | **required for SAM** | A2A protocol version string the agent speaks. Current SAM peers use `"0.3.0"`. |
+| `provider` | optional | If present, must include `organization` (string) and `url` (string) — both required by the A2A `AgentProvider` schema. **Do not use `name`** — SAM rejects the card with `provider.organization Field required` if you do. |
 | `capabilities.streaming` | recommended | Set `true` — this wrapper streams every AIMessage chunk back to the caller. |
 | `capabilities.pushNotifications` | optional | Not implemented by this wrapper; leave `false`. |
+| `capabilities.stateTransitionHistory` | **required for SAM** | SAM peer agents set this to `false`. Including the field is what matters — its absence is what causes SAM to reject the registration. |
+| `capabilities.extensions` | **required for SAM** | Array of SAM-specific extension objects. SAM's UI uses these for display and tool discovery. Two extensions are expected (see below). Without `extensions`, the agent connects to the broker but does not appear in the SAM mesh registry / UI. |
 | `defaultInputModes` / `defaultOutputModes` | recommended | Currently only `"text"` is honored end-to-end (see constraints). |
 | `skills` | recommended | List of `{id, name, description, tags}`. Discovery only — the wrapper doesn't dispatch on skill id. |
+
+**Required `capabilities.extensions` entries** (both):
+
+1. **Display name** — `uri: "https://solace.com/a2a/extensions/display-name"`, `params.display_name: "<UI label>"`. Drives the agent's name in the SAM UI's agent list.
+2. **Tools** — `uri: "https://solace.com/a2a/extensions/sam/tools"`, `params.tools: [...]`. List of `{id, name, description, tags}` for each tool the agent exposes. SAM uses this to populate the orchestrator's tool-routing table; at least one entry is expected.
+
+See [templates/agent_card.json](templates/agent_card.json) for the canonical filled-in structure, and [examples/doc_formatter/agent_card.json](examples/doc_formatter/agent_card.json) for a working example.
 
 To add your own agent: copy `templates/agent_card.json` next to your
 `agent.py`, fill in the `<placeholders>`. Your `main.py` (copied from

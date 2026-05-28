@@ -430,22 +430,59 @@ class A2ALangchainServer:
                 if not message_text and hasattr(event, "content"):
                     message_text = str(event.content)
 
-                result_data = {
-                    "contextId": context_id,
-                    "id": request_id,
-                    "kind": "task",
-                    "metadata": {"agent_name": self.agent_name},
-                    "status": {
-                        "message": {
-                            "kind": "message",
-                            "messageId": str(_uuid.uuid4()).replace("-", ""),
-                            "parts": [{"kind": "text", "text": message_text}],
-                            "role": "agent",
-                        },
-                        "state": event.get("state", "completed") if isinstance(event, dict) else "completed",
-                        "timestamp": datetime.now(timezone.utc).isoformat(),
-                    },
+                # Determine if this is a terminal event. The adapter emits
+                # state="working" for streaming chunks and state="completed"
+                # exactly once at the end. Anything other than "completed" is
+                # treated as intermediate.
+                state = event.get("state", "completed") if isinstance(event, dict) else "completed"
+                is_final = state == "completed"
+
+                status_message = {
+                    "kind": "message",
+                    "messageId": str(_uuid.uuid4()).replace("-", ""),
+                    "parts": [{"kind": "text", "text": message_text}],
+                    "role": "agent",
                 }
+                timestamp = datetime.now(timezone.utc).isoformat()
+
+                if is_final:
+                    # Terminal envelope: A2A `Task`. SAM gateway tears down the
+                    # task context as soon as it sees one of these, so it must
+                    # be sent exactly once and last.
+                    result_data = {
+                        "contextId": context_id,
+                        "id": request_id,
+                        "kind": "task",
+                        "metadata": {"agent_name": self.agent_name},
+                        "status": {
+                            "message": status_message,
+                            "state": state,
+                            "timestamp": timestamp,
+                        },
+                        "artifacts": [
+                            {
+                                "artifactId": str(_uuid.uuid4()).replace("-", ""),
+                                "name": "response",
+                                "parts": [{"kind": "text", "text": message_text}],
+                            }
+                        ],
+                    }
+                else:
+                    # Intermediate envelope: A2A `TaskStatusUpdateEvent`. Must
+                    # set kind="status-update", taskId (not id), and final=False.
+                    # No artifacts — those belong only on the terminal Task.
+                    result_data = {
+                        "contextId": context_id,
+                        "taskId": request_id,
+                        "kind": "status-update",
+                        "metadata": {"agent_name": self.agent_name},
+                        "status": {
+                            "message": status_message,
+                            "state": state,
+                            "timestamp": timestamp,
+                        },
+                        "final": False,
+                    }
 
                 response_data = {
                     "jsonrpc": "2.0",

@@ -34,8 +34,14 @@ class AgentExecutor:
     async def cancel(self, context: RequestContext, event_queue: EventQueue):
         pass
 
-def new_agent_text_message(content: str, state: str = "processing") -> Dict[str, Any]:
-    """Create a new agent text message."""
+def new_agent_text_message(content: str, state: str = "working") -> Dict[str, Any]:
+    """Create a new agent text message.
+
+    `state` must be a valid A2A TaskState enum: submitted, working,
+    input-required, completed, canceled, failed, rejected, auth-required,
+    unknown. SAM's gateway validates this strictly and NACKs payloads with
+    out-of-spec values.
+    """
     return {
         "parts": [{"text": content}],
         "role": "agent",
@@ -71,9 +77,11 @@ class LangChainA2AAdapter(AgentExecutor):
 
                     # If the latest message is from the AI, send an update to the Mesh
                     if isinstance(last_message, AIMessage) and last_message.content:
-                        # Translate AIMessage -> A2A Event
-                        # Default to "processing" so Orchestrator keeps listening
-                        a2a_msg = new_agent_text_message(last_message.content, state="processing")
+                        # Translate AIMessage -> A2A Event. Use "working" (not
+                        # "processing") — only valid A2A TaskState enum for
+                        # in-progress is "working". SAM gateway NACKs anything
+                        # else and the UI never sees the response.
+                        a2a_msg = new_agent_text_message(last_message.content, state="working")
                         await event_queue.enqueue(a2a_msg)
                         last_content = last_message.content
 
