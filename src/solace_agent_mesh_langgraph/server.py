@@ -22,7 +22,7 @@ try:
     from solace.messaging.publisher.direct_message_publisher import DirectMessagePublisher
     SOLACE_AVAILABLE = True
 except ImportError as e:
-    logger.error("Could not import Solace PubSub+ package: %s", e)
+    logger.error("Could not import Solace package: %s", e)
     SOLACE_AVAILABLE = False
 
 from .adapter import LangChainA2AAdapter, Task, RequestContext, EventQueue
@@ -82,14 +82,14 @@ class A2ALangchainServer:
         Connects to the Solace broker, creates and binds a queue, subscribes to topics, and starts listening.
         """
         if not SOLACE_AVAILABLE:
-            raise RuntimeError("Solace PubSub+ package is required but not available. Install with: pip install solace-pubsubplus")
+            raise RuntimeError("Solace package is required but not available. Install with: pip install solace-pubsubplus")
 
         logger.info("Starting A2A Langchain Server...")
 
         try:
             self.messaging_service = MessagingService.builder().from_properties(self.broker_properties).build()
             self.messaging_service.connect()
-            logger.info("Connected to Solace PubSub+ broker")
+            logger.info("Connected to Solace broker")
         except Exception as e:
             raise RuntimeError(f"Failed to connect to Solace broker: {e}")
 

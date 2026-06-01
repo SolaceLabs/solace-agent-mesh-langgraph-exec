@@ -18,7 +18,6 @@ keywords = [
     "a2a",
     "agent-mesh",
     "agent-to-agent",
-    "pubsubplus",
 ]
 classifiers = [
     "Development Status :: 3 - Alpha",

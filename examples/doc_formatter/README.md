@@ -37,7 +37,7 @@ See [Conversation continuity](#conversation-continuity) below for what
 goes in `main.py` and why.
 
 > **TLS configuration only matters for `tcps://` URLs.**
-> - **Plain `tcp://` broker** (e.g. a local Solace PubSub+ container):
+> - **Plain `tcp://` broker** (e.g. a local Solace broker container):
 >   no TLS settings needed at all. Just the four `SOLACE_BROKER_*` creds.
 > - **`tcps://` broker, real deployment**: configure
 >   `SOLACE_BROKER_TRUST_STORE_DIR` to point at a directory of CA certs.
@@ -48,7 +48,7 @@ goes in `main.py` and why.
 What you should see (in order):
 
 1. `Initializing Documentation Formatter Agent...` — the graph compiles.
-2. `Connected to Solace PubSub+ broker` — wrapper is connected.
+2. `Connected to Solace broker` — wrapper is connected.
 3. `Queue '<random>' created and receiver started` — non-durable exclusive queue.
 4. `A2A LangChain Server ready - agent=doc_formatter ...`
 5. Every 3 seconds, an agent-card publish happens silently in the background.
@@ -76,7 +76,7 @@ docker build -t doc-formatter:dev -f examples/doc_formatter/Dockerfile .
 ```
 
 Minimal run — works for any plain `tcp://` broker (e.g. a local Solace
-PubSub+ container):
+broker container):
 
 ```bash
 docker run --rm \

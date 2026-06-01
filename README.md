@@ -3,7 +3,7 @@ This project provides the capability to run a compiled [LangGraph](https://langc
 [Solace Agent Mesh](https://solace.com/products/agent-mesh/) (SAM).
 
 The `solace_agent_mesh_langgraph` package binds a LangGraph application to a Solace
-PubSub+ broker: it creates a queue, subscribes to the standard A2A topics
+Solace broker: it creates a queue, subscribes to the standard A2A topics
 (`{namespace}/a2a/v1/agent/request/{name}`), periodically publishes
 the agent card on the discovery topic, and dispatches incoming JSON-RPC
 requests through the graph — streaming each AIMessage back to the requester's
@@ -164,7 +164,7 @@ for the full container recipe (gotchas: macOS host networking, podman
 equivalence, quoted env values).
 
 > **TLS configuration only matters for `tcps://` URLs (CLI *and* container).**
-> - **Plain `tcp://` broker** — e.g. a local Solace PubSub+ container —
+> - **Plain `tcp://` broker** — e.g. a local Solace broker container —
 >   needs no TLS settings at all.
 > - **`tcps://` broker** — configure `SOLACE_BROKER_TRUST_STORE_DIR`
 >   per [Configure](#configure) above.
