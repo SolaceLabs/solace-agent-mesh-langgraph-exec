@@ -1,0 +1,25 @@
+version: 3
+
+project:
+  locator: SolaceLabs_solace-agent-mesh-langgraph-exec
+  id: SolaceLabs_solace-agent-mesh-langgraph-exec
+  name: solace-agent-mesh-langgraph-exec
+  teams: []
+  labels:
+    - python
+
+vendoredDependencies:
+  forceRescans: false
+  scanMethod: CLILicenseScan
+  licenseScanPathFilters:
+    exclude:
+      - "./.git"
+      - "./.github"
+
+paths:
+  exclude:
+    - ./.git
+    - ./.github
+
+telemetry:
+  scope: full
